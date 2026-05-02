@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>API Demo - Rick and Morty</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="container">
+  <h1>Personajes Rick and Morty</h1>
+
+  <!-- 🔎 BUSCADOR -->
+  <input type="text" id="buscador" placeholder="Buscar personaje..." />
+
+  <div id="estado" class="loading">Cargando...</div>
+  <div id="contenedor" class="grid"></div>
+</div>
+
+<script>
+  const estado = document.getElementById("estado");
+  const contenedor = document.getElementById("contenedor");
+  const input = document.getElementById("buscador");
+
+  let timeout = null;
+
+  // función para obtener personajes (con o sin búsqueda)
+  const obtenerPersonajes = async (query = "") => {
+    estado.className = "loading";
+    estado.textContent = query ? "Buscando..." : "Cargando...";
+    contenedor.innerHTML = "";
+
+    try {
+      let url = "https://rickandmortyapi.com/api/character";
+
+      if (query) {
+        url += `/?name=${query}`;
+      }
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          estado.textContent = "No se encontraron resultados";
+          return;
+        }
+        throw new Error("Error en la API");
+      }
+
+      const data = await response.json();
+
+      if (!data.results || data.results.length === 0) {
+        estado.textContent = "No se encontraron resultados";
+        return;
+      }
+
+      estado.textContent = "";
+
+      contenedor.innerHTML = data.results.map(p => `
+        <div class="card">
+          <img src="${p.image}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p>${p.species}</p>
+        </div>
+      `).join("");
+
+    } catch (error) {
+      estado.textContent = "Error de red o del servidor";
+      contenedor.innerHTML = `<div class="error">${error.message}</div>`;
+    }
+  };
+
+  // 🔎 evento de búsqueda dinámica
+  input.addEventListener("input", () => {
+    const query = input.value.trim();
+
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+      if (query.length === 0) {
+        obtenerPersonajes(); // vuelve a cargar todo
+        return;
+      }
+
+      if (query.length < 3) {
+        estado.textContent = "Ingresá al menos 3 caracteres...";
+        contenedor.innerHTML = "";
+        return;
+      }
+
+      obtenerPersonajes(query);
+    }, 300);
+  });
+
+  // inicial
+  obtenerPersonajes();
+</script>
+
+</body>
+</html>

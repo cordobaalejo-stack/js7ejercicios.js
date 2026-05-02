@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="css/app.css">
+  <meta charset="UTF-8">
+  <title>Productos</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .filtros { margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
+    .productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .card { border: 1px solid #ccc; padding: 10px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>Lista de Productos</h1>
+
+  <div class="filtros">
+    <select id="categoria">
+      <option value="">Todas</option>
+      <option value="tecnologia">Tecnología</option>
+      <option value="hogar">Hogar</option>
+      <option value="ropa">Ropa</option>
+    </select>
+
+    <label>
+      Precio máximo: <span id="precioValor">1000</span>
+      <input type="range" id="precio" min="0" max="1000" value="1000">
+    </label>
+
+    <label>
+      <input type="checkbox" id="stock"> Solo en stock
+    </label>
+
+    <input type="text" id="busqueda" placeholder="Buscar por nombre...">
+  </div>
+
+  <div class="productos" id="contenedor"></div>
+
+  <script>
+    const productos = [
+      { id: 1, nombre: "Notebook", precio: 900, categoria: "tecnologia", enStock: true },
+      { id: 2, nombre: "Celular", precio: 700, categoria: "tecnologia", enStock: false },
+      { id: 3, nombre: "Televisor", precio: 800, categoria: "tecnologia", enStock: true },
+      { id: 4, nombre: "Silla", precio: 150, categoria: "hogar", enStock: true },
+      { id: 5, nombre: "Mesa", precio: 300, categoria: "hogar", enStock: false },
+      { id: 6, nombre: "Campera", precio: 200, categoria: "ropa", enStock: true },
+      { id: 7, nombre: "Zapatillas", precio: 250, categoria: "ropa", enStock: true },
+      { id: 8, nombre: "Heladera", precio: 950, categoria: "hogar", enStock: false }
+    ];
+
+    const contenedor = document.getElementById("contenedor");
+    const categoria = document.getElementById("categoria");
+    const precio = document.getElementById("precio");
+    const stock = document.getElementById("stock");
+    const busqueda = document.getElementById("busqueda");
+    const precioValor = document.getElementById("precioValor");
+
+    const renderProductos = (lista) => {
+      contenedor.innerHTML = lista.map(p => `
+        <div class="card">
+          <h3>${p.nombre}</h3>
+          <p>Precio: $${p.precio}</p>
+          <p>Categoría: ${p.categoria}</p>
+          <p>${p.enStock ? "En stock" : "Sin stock"}</p>
+        </div>
+      `).join("");
+    };
+
+    const aplicarFiltros = () => {
+      let filtrados = productos
+        .filter(p => !categoria.value || p.categoria === categoria.value)
+        .filter(p => p.precio <= precio.value)
+        .filter(p => !stock.checked || p.enStock)
+        .filter(p => p.nombre.toLowerCase().includes(busqueda.value.toLowerCase()));
+
+      renderProductos(filtrados);
+    };
+
+    // Eventos
+    categoria.addEventListener("change", aplicarFiltros);
+    precio.addEventListener("input", () => {
+      precioValor.textContent = precio.value;
+      aplicarFiltros();
+    });
+    stock.addEventListener("change", aplicarFiltros);
+    busqueda.addEventListener("input", aplicarFiltros);
+
+    // Inicial
+    renderProductos(productos);
+  </script>
+
+</body>
+</html>
